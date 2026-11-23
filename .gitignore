@@ -9,3 +9,8 @@ dist-test/
 .env.*
 !.env.example
 *.tsbuildinfo
+.local/
+*.sqlite*
+apps/mobile/android/
+apps/mobile/ios/
+dist/

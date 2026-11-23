@@ -1,40 +1,23 @@
 # AlperFlex
 
-Çok merkezli kargo dağıtımı için Next.js yönetici paneli, Expo Android/iOS kurye uygulaması ve Supabase/PostgreSQL arka ucu.
+Çok merkezli kargo dağıtımı için bilgisayarda çalışan yönetici paneli ve Android kurye uygulaması. Veriler SQLite dosyasında, bu bilgisayarda saklanır. Supabase veya Google Maps hesabı gerekmez. Adresler metin olarak gösterilir; harita ve otomatik rota yoktur.
 
-## Kurulum
+**Başlamak için:** [Türkçe kurulum ve test kılavuzu](LOCAL_SETUP.md).
 
-1. Supabase projesi açın. `supabase/migrations/001_initial.sql` dosyasını SQL Editor'da çalıştırın.
-2. Supabase Authentication panelinden ilk yönetici kullanıcıyı e-posta ve şifre ile oluşturun. Kullanıcının UUID'si ile aşağıdaki komutu SQL Editor'da çalıştırın:
+## Komutlar
 
-   ```sql
-   insert into public.profiles(id, full_name, role)
-   values ('AUTH_USER_UUID', 'İlk Yönetici', 'admin');
-   ```
+```powershell
+npm ci                 # İlk kurulum
+npm run setup:admin    # İlk yönetici
+npm run build          # Web üretim derlemesi
+npm run start:local    # Web ve API, port 3000
+npm run backup         # SQLite yedeği
+npm run restore -- "C:\\yedek\\alperflex.sqlite" # Sunucu kapalıyken geri yükleme
+npm run build:apk      # Yerel Android test APK'sı
+npm run typecheck      # Tip kontrolü
+npm test               # Yerel API uçtan uca testi; önce build gerekir
+```
 
-3. `apps/web/.env.example` dosyasını `apps/web/.env.local`, `apps/mobile/.env.example` dosyasını `apps/mobile/.env` olarak kopyalayıp anahtarları doldurun. `SUPABASE_SERVICE_ROLE_KEY` yalnızca web sunucusunda kalmalıdır.
-4. Google Cloud projesinde Maps SDK for Android, Maps SDK for iOS, Geocoding API ve Routes API'yi açın; faturalandırma ve platforma göre kısıtlanmış anahtarları ayarlayın. Sunucu anahtarını web ortamına, mobil SDK anahtarlarını mobil ortama girin.
-5. Kök dizinde `npm install` çalıştırın. Web paneli için `npm run dev:web`; mobil uygulama için `npm run dev:mobile` çalıştırın. Fiziksel telefonda `EXPO_PUBLIC_API_URL`, bilgisayarın yerel ağ IP adresindeki web sunucusunu göstermelidir.
-6. Haritanın yerel SDK kurulumu gerektiğinden mobil uygulamayı Expo development build ile açın (`npm run android -w @alperflex/mobile` veya macOS üzerinde `npm run ios -w @alperflex/mobile`). Google Maps anahtarları olmadan harita görüntülenmez.
+Android uygulaması kayıtlı yerel Wi-Fi ve Tailscale adreslerini otomatik dener. Kurye kendi hesabını açar; merkez hesabı onayladıktan sonra giriş yapar. Bilgisayar açık ve web sunucusu çalışır durumda olmalıdır; telefon işlemleri çevrimdışı biriktirmez. Bilgisayarın IP adresi değişirse APK içindeki adreslerin güncellenip yeniden derlenmesi gerekir.
 
-## İşleyiş
-
-- Yönetici merkez, raf/göz ve kurye hesabı oluşturur. Kurye bir vardiyada tek merkeze bağlıdır; azami parça sayısı hesap oluştururken belirlenir.
-- Yönetici kargo ve adresleri elle girer. Adresler koordinata çevrilir ve her kargoya benzersiz QR etiketi basılır. Aynı alıcı ve teslimat adresinin aynı metinle girilmesi, parçaların kapasite elverdiğince birlikte gruplanmasını sağlar.
-- Kurye uygulamada müsait duruma geçince kendi merkezinden ve kapasitesine uygun iş önerilir. Reddedilen iş başka uygun kuryeye gider; uygun kurye yoksa sırada kalır.
-- Merkezde bir QR okutulup tüm parçalar alındığı onaylanır. Adreste ise her parçanın QR'ı ayrı okutulur. QR kodu yalnızca rastgele UUID içerir.
-- İnternet bağlantısı gereklidir. Konum izni verilmezse açık adres görünür ve kurye varışı konumsuz kaydedebilir.
-
-## Doğrulama
-
-`npm run typecheck` ve `npm run build` çalıştırın. Canlı Supabase ve Google anahtarlarıyla iki merkez, iki kurye ve belge/kutu/paket örnekleri oluşturup şu akışları deneyin: reddedilen teklifin yeniden önerilmesi, beş parçalık işin merkezde tek QR ile doğrulanması, yanlış QR'ın reddedilmesi ve aynı adresteki iki kutunun ikisi okutulmadan teslimatın tamamlanamaması.
-
-Güncel Expo/React Native araç zincirinde `npm audit` yüksek önem dereceli transitive uyarılar gösterebilir. `npm audit fix --force` uyumsuz eski sürümlere düşürmeyi önerdiği için uygulanmadı; canlı yayından önce bağımlılık duyurularını ve gerçek cihaz testlerini yeniden değerlendirin.
-
-## Yapı
-
-- `apps/web`: yönetici paneli ve kimlik doğrulamalı API.
-- `apps/mobile`: Android/iOS kurye uygulaması.
-- `supabase/migrations`: veri modeli, erişim kısıtları ve atomik iş geçişleri.
-
-Alıcı uygulaması, yönetici tarafında QR ile kargo ekleme, fotoğraf, alıcı kodu ve çevrimdışı çalışma ilk sürümün dışındadır.
+Canlı veritabanı OneDrive ile eşitlenmemesi için varsayılan olarak `%LOCALAPPDATA%\AlperFlex\data.sqlite` konumundadır. `ALPERFLEX_DATA_DIR` ortam değişkeniyle farklı bir dizin seçilebilir. Bu proje test ve demo içindir.
