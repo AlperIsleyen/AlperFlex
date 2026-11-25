@@ -1,6 +1,7 @@
 {
   "name": "alperflex",
   "private": true,
+  "license": "GPL-3.0-only",
   "workspaces": ["apps/web", "apps/mobile"],
   "dependencies": {
     "react-native-screens": "4.30.0",
